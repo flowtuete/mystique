@@ -1,0 +1,21 @@
+{
+
+  "manifest_version": 2,
+  "name": "Mystique-FF",
+  "version": "0.1",
+
+  "description": "Experimental browser plugin which should obscure browsing behaviour of its users - https://github.com/bensteUEM/mystique",
+
+  "icons": {
+  "48": "icons/DHBW_CAS_logo_blur-48.png",
+  "96": "icons/DHBW_CAS_logo_blur-96.png"
+},
+  
+  "content_scripts": [
+    {
+      "matches": ["*://*.dhbw.de/*"],
+      "js": ["mystique.js"]
+    }
+  ]
+
+}
