@@ -1,0 +1,1 @@
+ alert("Mystique Addon loads on Firefox and the DHBW pages");
