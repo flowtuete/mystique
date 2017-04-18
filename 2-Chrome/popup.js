@@ -16,3 +16,5 @@ function saveActivationState(newState)
 	chrome.storage.sync.set({
 		activate: newState});
 }		
+
+
