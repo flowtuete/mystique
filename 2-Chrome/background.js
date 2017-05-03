@@ -13,17 +13,42 @@ var loadUrlInterval;
 // interval duration in ms
 var intervalDuration = 5000;
 
+// the next url which should be opened.
+// Could be null at the moment because the urlLib is very slow at generating new urls!"
+var nextUrl = null;
+
+// Wordlist copied from urlLib to call generateURL
+var wordlist = ["abacus", "abbey", "abdomen", "ability", "abolishment", "abroad", "accelerant", "accelerator", "accident", "accompanist", "accordion", "account", "accountant", "achieve", "achiever", "acid", "acknowledgment", "acoustic", "acoustics", "acrylic", "act", "action", "active", "activity", "actor", "actress", "acupuncture", "ad", "adapter", "addiction", "addition", "address", "adjustment", "administration", "adrenalin"];
+
+chrome.storage.sync.get({
+    activate: "true",
+    linksOnDomainOnly: "false",
+    maxBytes: '100',
+    linkCoveragePecentage: 10,
+    linkDepth: 5,
+}, function(items) {
+    runMystique = items.activate;
+});
+
 loadUrlInterval = setInterval(function() {
 	if(index === 0){
 		urlWindow = window.open();
-	} else if(!runMystique) {
-		clearInterval(loadUrlInterval);
-		return;
 	}
-	urlWindow.location.href = urls[index % urls.length];
+	if(runMystique) {
+	    if (nextUrl !== null) {
+            urlWindow.location.href = nextUrl;
+            nextUrl = null;
+            index++;
+        }
+	} else {
+        clearInterval(loadUrlInterval);
+	}
 
-	
-	index++;
+    urlLib.generateURL({wordlist: wordlist}).then((url) => {
+		console.log("result from urlLib: ", url);
+        nextUrl = url;
+	});
+
 }, intervalDuration);
 
 
@@ -33,3 +58,13 @@ chrome.runtime.onMessage.addListener(
 	console.log("Links ", request.links);
 	// console.log(request.dom);
   });
+
+// Get changes from settings
+chrome.storage.onChanged.addListener(function(changes, namespace) {
+	let active = 'activate';
+	if (changes.hasOwnProperty(active)) {
+        let storageChange = changes[active];
+        runMystique = storageChange.newValue
+    }
+});
+
