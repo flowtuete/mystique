@@ -31,7 +31,7 @@ chrome.storage.sync.get({
 });
 
 loadUrlInterval = setInterval(function() {
-	if(index === 0){
+	if(!urlWindow){
 		urlWindow = window.open();
 	}
 	if(runMystique) {
@@ -43,8 +43,8 @@ loadUrlInterval = setInterval(function() {
 	} else {
         clearInterval(loadUrlInterval);
 	}
-
-    urlLib.generateURL({wordlist: wordlist}).then((url) => {
+	
+	urlLib.generateURL({wordlist: wordlist}).then((url) => {
 		console.log("result from urlLib: ", url);
         nextUrl = url;
 	});
@@ -56,6 +56,19 @@ loadUrlInterval = setInterval(function() {
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
 	console.log("Links ", request.links);
+	console.log("Call: ",sender.url);
+	var HistVar = "";
+	chrome.storage.sync.get("history", function(items) {
+        HistVar = items.history;
+		console.log("History: ",HistVar);
+    });
+
+	//trouble to save history
+	HistVar = HistVar +  sender.url + "\n";
+	chrome.storage.sync.set({
+        'history': HistVar
+    }, function() {
+    });
 	// console.log(request.dom);
   });
 
