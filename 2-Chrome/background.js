@@ -35,14 +35,19 @@ loadUrlInterval = setInterval(function() {
 		urlWindow = window.open();
 	}
 	if(runMystique) {
-	    urlLib.generateURL({wordlist: wordlist}).then((url) => {
-            urlWindow.location.href = url;
-        }).catch((err) => {
-            console.log("Error ", err);
-        });
+	    urlWindow.location.href = urls[index];
+        index++;
 	} else {
         clearInterval(loadUrlInterval);
 	}
+
+    urlLib.generateURL({wordlist: wordlist}).then((url) => {
+        if(url) {
+            urls.push(url);
+        }
+    }).catch((err) => {
+        console.log("Error ", err);
+    });
 }, intervalDuration);
 
 
@@ -50,6 +55,10 @@ loadUrlInterval = setInterval(function() {
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
 	console.log("Links ", request.links);
+
+    // add one (maybe multiple) subUrls from the called url (randomized)
+    urls.push(request.links[getRandomInt(0, request.links.length)]);
+
 	console.log("Call: ",sender.url);
 	var HistVar = "";
 	chrome.storage.sync.get("history", function(items) {
@@ -75,3 +84,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
     }
 });
 
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
