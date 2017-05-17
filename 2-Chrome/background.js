@@ -35,20 +35,14 @@ loadUrlInterval = setInterval(function() {
 		urlWindow = window.open();
 	}
 	if(runMystique) {
-	    if (nextUrl !== null) {
-            urlWindow.location.href = nextUrl;
-            nextUrl = null;
-            index++;
-        }
+	    urlLib.generateURL({wordlist: wordlist}).then((url) => {
+            urlWindow.location.href = url;
+        }).catch((err) => {
+            console.log("Error ", err);
+        });
 	} else {
         clearInterval(loadUrlInterval);
 	}
-	
-	urlLib.generateURL({wordlist: wordlist}).then((url) => {
-		console.log("result from urlLib: ", url);
-        nextUrl = url;
-	});
-
 }, intervalDuration);
 
 
