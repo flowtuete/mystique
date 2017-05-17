@@ -1,8 +1,12 @@
 // We need to get them from the urlLib later
 var urls = ["http://google.de", "http://amazon.de", "http://ebay.de"];
+var subUrl;
 
 // We need to load this from the settings
 var runMystique = true;
+
+var maxLinkDepth;
+var currLinkDepth = 0;
 
 // Reference for tab, which loads the given urls
 var urlWindow;
@@ -12,7 +16,6 @@ var index = 0;
 var loadUrlInterval;
 // interval duration in ms
 var intervalDuration = 5000;
-
 // the next url which should be opened.
 // Could be null at the moment because the urlLib is very slow at generating new urls!"
 var nextUrl = null;
@@ -28,6 +31,7 @@ chrome.storage.sync.get({
     linkDepth: 5,
 }, function(items) {
     runMystique = items.activate;
+    maxLinkDepth = items.linkDepth;
 });
 
 loadUrlInterval = setInterval(function() {
@@ -35,19 +39,27 @@ loadUrlInterval = setInterval(function() {
 		urlWindow = window.open();
 	}
 	if(runMystique) {
-	    urlWindow.location.href = urls[index];
-        index++;
+        if(!subUrl || currLinkDepth >= maxLinkDepth) {
+	        urlWindow.location.href = urls[index];
+            index++;
+            currLinkDepth = 0;
+        } else {
+            urlWindow.location.href = subUrl;
+            currLinkDepth++;
+        }
+
+
 	} else {
         clearInterval(loadUrlInterval);
 	}
 
-    urlLib.generateURL({wordlist: wordlist}).then((url) => {
+    /*urlLib.generateURL({wordlist: wordlist}).then((url) => {
         if(url) {
             urls.push(url);
         }
     }).catch((err) => {
         console.log("Error ", err);
-    });
+    }); */
 }, intervalDuration);
 
 
@@ -57,9 +69,9 @@ chrome.runtime.onMessage.addListener(
 	console.log("Links ", request.links);
 
     // add one (maybe multiple) subUrls from the called url (randomized)
-    urls.push(request.links[getRandomInt(0, request.links.length)]);
 
-	console.log("Call: ",sender.url);
+    subUrl = request.links[getRandomInt(0, request.links.length)];
+    console.log("Call: ",sender.url);
 	var HistVar = "";
 	chrome.storage.sync.get("history", function(items) {
         HistVar = items.history;
